@@ -1,10 +1,15 @@
 package com.github.filter;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.rocketmq.common.message.Message;
+import com.github.autoconf.helper.ConfigHelper;
 import com.github.filter.helpers.FilterHelpers;
 import com.github.filter.helpers.Pair;
 import com.github.filter.io.BufferedResponseWrapper;
 import com.github.filter.io.CharsetDetectRequestWrapper;
 import com.github.trace.TraceContext;
+import com.github.trace.bean.AccessBean;
+import com.github.trace.sender.RocketMqSender;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -108,10 +113,56 @@ public class CoreFilter implements Filter {
             }
           }
         } finally {
+          //染色日志发送到总线上
+          TraceContext c = TraceContext.get();
           TraceContext.remove();
+          if (c.isColor()) {
+            sendTrace(req, c, resWrapper);
+          }
         }
       }
     }
+  }
+
+  /* 发送trace日志到总线上 */
+  private void sendTrace(HttpServletRequest req, TraceContext c, BufferedResponseWrapper res) {
+    AccessBean b = new AccessBean();
+    b.setStamp(FilterHelpers.getRequestTime(req));
+    b.setCost((int) FilterHelpers.getCostTime(req));
+    b.setTraceId(c.getTraceId());
+    b.setRpcId(c.getParentRpcId());
+    b.setClientIp(getRemoteIp(req));
+    b.setServerIp(ConfigHelper.getServerInnerIP());
+    b.setProfile(ConfigHelper.getProcessInfo().getProfile());
+    b.setCode(res.getStatus());
+    b.setSize(res.getLength());
+    b.setReferer(req.getHeader("Referer"));
+    b.setUserAgent(req.getHeader("User-Agent"));
+    b.setCookie(req.getHeader("Cookie"));
+    b.setUid(FilterHelpers.getUserId(req));
+    String url = req.getServerName();
+    if (req.getServerPort() != 80) {
+      url += ':' + req.getServerPort();
+    }
+    if (req.getQueryString() != null) {
+      url += '?' + req.getQueryString();
+    }
+    b.setUrl(url);
+    Message m = new Message("JinJingAccess", c.getTraceId(), JSON.toJSONBytes(b));
+    RocketMqSender.getInstance().asyncSend(m);
+  }
+
+  /* 从request中获取IP, 首先从X-Forwarded-For的头信息中提取，否则取直连的IP. */
+  public String getRemoteIp(HttpServletRequest r) {
+    String ip = r.getHeader("X-Forwarded-For");
+    if (ip != null && ip.length() > 7) {
+      int pos = ip.indexOf(',');
+      if (pos > 0) {
+        return ip.substring(0, pos);
+      }
+      return ip;
+    }
+    return r.getRemoteAddr();
   }
 
   private void fillTraceContext(CharsetDetectRequestWrapper reqWrapper) {

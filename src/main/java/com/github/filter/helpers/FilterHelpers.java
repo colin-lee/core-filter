@@ -15,6 +15,7 @@ public final class FilterHelpers {
   public static final String IS_SPIDER_ATTRIBUTE = "IS_SPIDER_ATTR_NAME";
   public static final String IS_COLOR_ATTRIBUTE = "IS_COLOR_ATTR_NAME";
   public static final String TRACE_ID_ATTRIBUTE = "PV_TRACE_ID";
+  public static final String USER_ID_ATTRIBUTE = "PV_USER_ID";
 
   private FilterHelpers() {
   }
@@ -164,6 +165,14 @@ public final class FilterHelpers {
    */
   public static void setColorized(HttpServletRequest request, Boolean colorized) {
     request.setAttribute(IS_COLOR_ATTRIBUTE, colorized);
+  }
+
+  public static String getUserId(HttpServletRequest request) {
+    return getAttribute(request, USER_ID_ATTRIBUTE);
+  }
+
+  public static void setUserId(HttpServletRequest request, String uid) {
+    request.setAttribute(USER_ID_ATTRIBUTE, uid);
   }
 
   public static <T> T getAttribute(HttpServletRequest request, String name) {
