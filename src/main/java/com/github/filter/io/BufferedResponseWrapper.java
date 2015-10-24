@@ -164,8 +164,9 @@ public class BufferedResponseWrapper extends HttpServletResponseWrapper {
 
   private Charset getEncodingCharset() {
     String encoding = getCharacterEncoding();
-    if (Strings.isNullOrEmpty(encoding) || encoding.toLowerCase().equals(NAME_ISO_8859_1))
+    if (Strings.isNullOrEmpty(encoding) || encoding.toLowerCase().equals(NAME_ISO_8859_1)) {
       return UTF8;
+    }
     try {
       return Charset.forName(encoding);
     } catch (Exception e) {
@@ -175,8 +176,9 @@ public class BufferedResponseWrapper extends HttpServletResponseWrapper {
 
   @Override
   public void setCharacterEncoding(String charset) {
-    if (charset != null && charset.toLowerCase().equals(NAME_ISO_8859_1))
+    if (charset != null && charset.toLowerCase().equals(NAME_ISO_8859_1)) {
       charset = NAME_UTF_8;
+    }
     super.setCharacterEncoding(charset);
   }
 

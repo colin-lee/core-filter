@@ -94,17 +94,7 @@ public class CoreFilter implements Filter {
           if (resWrapper.getLocation() != null) {
             res.sendRedirect(resWrapper.getLocation());
           } else {
-            String contentType = res.getContentType();
-            if (Strings.isNullOrEmpty(contentType))
-              contentType = "text/html";
-            if (!contentType.toLowerCase().contains("charset")) {
-              String encoding = res.getCharacterEncoding();
-              if (Strings.isNullOrEmpty(encoding) || encoding.toLowerCase().equals("iso-8859-1")) {
-                encoding = "UTF-8";
-              }
-              contentType += "; charset=" + encoding;
-              res.setContentType(contentType);
-            }
+            setContentType(res);
             try {
               copyResponse(res, resWrapper);
             } catch (Exception e) {
@@ -120,6 +110,33 @@ public class CoreFilter implements Filter {
             sendTrace(req, c, resWrapper);
           }
         }
+      }
+    }
+  }
+
+  /* 避免中文乱码 */
+  private void setContentType(HttpServletResponse res) {
+    String contentType = res.getContentType();
+    if (Strings.isNullOrEmpty(contentType)) {
+      contentType = "text/html; charset=UTF-8";
+    }
+    final String iso = "iso-8859-1";
+    if (!contentType.toLowerCase().contains("charset")) {
+      String encoding = res.getCharacterEncoding();
+      if (Strings.isNullOrEmpty(encoding) || encoding.toLowerCase().equals(iso)) {
+        encoding = "UTF-8";
+      }
+      contentType += "; charset=" + encoding;
+      res.setContentType(contentType);
+    } else {
+      int pos = contentType.toLowerCase().lastIndexOf(iso);
+      if (pos > 0) {
+        String mime = contentType.substring(0, pos) + "UTF-8";
+        int start = pos + iso.length() + 1;
+        if (start < contentType.length()) {
+          mime += contentType.substring(start);
+        }
+        res.setContentType(mime);
       }
     }
   }
