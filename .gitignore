@@ -1,3 +1,13 @@
+.idea
+target
+
+*.iml
+out
+gen
+
+rebel.xml
+
+### Java template
 *.class
 
 # Mobile Tools for Java (J2ME)
