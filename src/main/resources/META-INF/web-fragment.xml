@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://java.sun.com/xml/ns/javaee"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"
+              version="3.0" metadata-complete="true">
+    <name>CoreFilter</name>
+    <ordering>
+        <before>
+            <others/>
+        </before>
+    </ordering>
+    <filter>
+        <filter-name>coreFilter</filter-name>
+        <filter-class>com.github.filter.CoreFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>coreFilter</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>
+</web-fragment>

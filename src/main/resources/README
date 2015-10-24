@@ -1,0 +1,8 @@
+业务核心ServletFilter
+
+测试方法：
+1. 启动test目录下的JettyServer，可以输入 http://localhost/
+2. 用hello.htm测试正常响应
+3. 用302.jsp测试302跳转
+4. 用500.jsp测试服务端500错误
+5. 随便一个不存在的页面，测试404错误
