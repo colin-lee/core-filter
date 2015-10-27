@@ -7,6 +7,7 @@ import com.github.filter.helpers.FilterHelpers;
 import com.github.filter.helpers.Pair;
 import com.github.filter.io.BufferedResponseWrapper;
 import com.github.filter.io.CharsetDetectRequestWrapper;
+import com.github.filter.reporter.PageStatusReporter;
 import com.github.trace.TraceContext;
 import com.github.trace.bean.AccessBean;
 import com.github.trace.sender.RocketMqSender;
@@ -103,12 +104,14 @@ public class CoreFilter implements Filter {
             }
           }
         } finally {
-          //染色日志发送到总线上
           TraceContext c = TraceContext.get();
           TraceContext.remove();
+          //染色日志发送到总线上
           if (c.isColor()) {
             sendTrace(req, c, resWrapper);
           }
+          //统计页面状态信息
+          PageStatusReporter.getInstance().stat(req, c.getCost(), res.getStatus(), c.isSpider());
         }
       }
     }
